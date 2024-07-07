@@ -57,7 +57,7 @@ def generate_config(record):
             if eval(str(SIMULATION)) is True:
                 tty_file = ""
             else:
-                tty_file = f"> {record['Resource']} {id[0]}.tf"
+                tty_file = f"> {record['Resource']}{id[0]}.tf"
             os.system(f"cf-terraforming generate --email {CLOUDFLARE_EMAIL} \
                       --token {CLOUDFLARE_API_TOKEN} {id} --resource-type \
                         {record['Resource']} {tty_file}")
