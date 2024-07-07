@@ -10,7 +10,7 @@
 # --------------
 # Clone the repo, create the .env file with the below variables and execute "run.sh":
 # CLOUDFLARE_EMAIL=email@domain.tld
-# CLOUDFLARE_API_TOKEN=XXXXXXXXXXXX
+# TF_VAR_API_TOKEN=XXXXXXXXXXXX
 # ACCOUNT=XXXXXXXX
 # ZONE01=XXXXXX
 # ZONE02=xxxxx
@@ -23,7 +23,7 @@ from dotenv import load_dotenv  # type: ignore
 
 load_dotenv()
 CLOUDFLARE_EMAIL = os.getenv('CLOUDFLARE_EMAIL')
-CLOUDFLARE_API_TOKEN = os.getenv('CLOUDFLARE_API_TOKEN')
+TF_VAR_API_TOKEN = os.getenv('TF_VAR_API_TOKEN')
 ACCOUNT = os.getenv('ACCOUNT')
 ZONE01 = os.getenv('ZONE01')
 ZONE02 = os.getenv('ZONE02')
@@ -57,9 +57,9 @@ def generate_config(record):
             if eval(str(SIMULATION)) is True:
                 tty_file = ""
             else:
-                tty_file = f"> {record['Resource']}{id[0]}.tf"
+                tty_file = f"> {record['Resource']}-{id[2:5].upper()}{id[10]}.tf"
             os.system(f"cf-terraforming generate --email {CLOUDFLARE_EMAIL} \
-                      --token {CLOUDFLARE_API_TOKEN} {id} --resource-type \
+                      --token {TF_VAR_API_TOKEN} {id} --resource-type \
                         {record['Resource']} {tty_file}")
     return "Generated configuration"
 
@@ -68,25 +68,27 @@ def import_config(record):
     if eval(record["ImportSupported"]) is True:
         acc_zone = account_or_zone(record["ResourceScope"])
         for id in acc_zone:
-            import_list = os.system(f"cf-terraforming import --email \
-                                    {CLOUDFLARE_EMAIL} \
-                                    --token {CLOUDFLARE_API_TOKEN} \
-                                    {id} --resource-type {record['Resource']}")
-            if import_list == type(list):
-                if eval(str(SIMULATION)) is True:
-                    print(import_list)
-                else:
-                    for command in import_list:
-                        os.system(command)
+            os.system(f"cf-terraforming import --email {CLOUDFLARE_EMAIL} \
+                        --token {TF_VAR_API_TOKEN} {id} --resource-type \
+                        {record['Resource']} >> import_list.txt")
+            with open('import_list.txt', 'r') as file:
+                import_list = file.readlines()
+            os.remove('import_list.txt')
+            if eval(str(SIMULATION)) is True:
+                print(import_list)
+            else:
+                for command in import_list:
+                    print ("------> COMMAND:", command)
+                    os.system(command)
     return "Resource imported into state file"
 
 
 def main():
     resource_types = read_CSV("./resource-types.csv")
     for item in resource_types:
-        print (">>>> Attempting generation and import for:", item)
-        print (generate_config(item))
-        print (import_config(item))
+        print(">>>> Attempting generation and import for:", item)
+        print(generate_config(item))
+        print(import_config(item))
 
 
 if __name__ == '__main__':
