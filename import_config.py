@@ -47,21 +47,21 @@ def account_or_zone(ResourceScope) -> list:
         acc_zone = [f"--account {ACCOUNT}"]
     else:
         acc_zone = [f"--zone {ZONE01}", f"--zone {ZONE02}"]
-    return [acc_zone]
+    return acc_zone
 
 
 def generate_config(record):
-    if eval(record["GenerateSupported"]) is True:
+    if eval(str(record["GenerateSupported"])) is True:
         acc_zone = account_or_zone(record["ResourceScope"])
         for id in acc_zone:
-            if eval(str(SIMULATION)) == True:
+            if eval(str(SIMULATION)) is True:
                 tty_file = ""
             else:
                 tty_file = f"> {record['Resource']} {id[0]}.tf"
             os.system(f"cf-terraforming generate --email {CLOUDFLARE_EMAIL} \
                       --token {CLOUDFLARE_API_TOKEN} {id} --resource-type \
                         {record['Resource']} {tty_file}")
-    return "Configuation generated"
+    return "Generated configuration"
 
 
 def import_config(record):
@@ -73,17 +73,18 @@ def import_config(record):
                                     --token {CLOUDFLARE_API_TOKEN} \
                                     {id} --resource-type {record['Resource']}")
             if import_list == type(list):
-                if eval(str(SIMULATION)) == True:
+                if eval(str(SIMULATION)) is True:
                     print(import_list)
                 else:
                     for command in import_list:
                         os.system(command)
-    return "Terraform resources imported into state file"
+    return "Resource imported into state file"
 
 
 def main():
     resource_types = read_CSV("./resource-types.csv")
     for item in resource_types:
+        print (">>>> Attempting generation and import for:", item)
         print (generate_config(item))
         print (import_config(item))
 

@@ -37,3 +37,4 @@ terraform.rc
 **/.vscode/*
 .vscode/
 .Ds_Store
+.venv
