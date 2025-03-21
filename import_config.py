@@ -3,7 +3,7 @@
 # state file. More details in:
 # https://developers.cloudflare.com/terraform/advanced-topics/import-cloudflare-resources
 
-# The script uses a list of resources extracted from (valid in July/2024):
+# The script uses a list of resources extracted from (valid in Mar/2025):
 # https://github.com/cloudflare/cf-terraforming?tab=readme-ov-file#supported-resources
 
 # HOW TO USE IT:
@@ -15,7 +15,7 @@
 # ZONE01=XXXXXX
 # ZONE02=xxxxx
 #
-# Ps: The number of zones is added/removed manually. Change it as necessary.
+# PS: The number of zones is added/removed manually. Change it as necessary.
 
 import csv
 import os
@@ -43,7 +43,9 @@ def read_CSV(csv_file) -> list:
 
 
 def account_or_zone(ResourceScope) -> list:
-    if ResourceScope == "Account":
+    if ResourceScope == "Account or Zone":
+        acc_zone = [f"--account {ACCOUNT}", f"--zone {ZONE01}", f"--zone {ZONE02}"]
+    elif ResourceScope == "Account":
         acc_zone = [f"--account {ACCOUNT}"]
     else:
         acc_zone = [f"--zone {ZONE01}", f"--zone {ZONE02}"]
@@ -78,7 +80,7 @@ def import_config(record):
                 print(import_list)
             else:
                 for command in import_list:
-                    print ("------> COMMAND:", command)
+                    print("------> COMMAND:", command)
                     os.system(command)
     return "Resource imported into state file"
 

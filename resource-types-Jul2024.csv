@@ -23,7 +23,6 @@ cloudflare_filter,Zone,True,True
 cloudflare_firewall_rule,Zone,True,True
 cloudflare_healthcheck,Zone,True,True
 cloudflare_ip_list,Account,False,True
-cloudflare_list,Account,True,False
 cloudflare_load_balancer,Zone,True,True
 cloudflare_load_balancer_monitor,Account,True,True
 cloudflare_load_balancer_pool,Account,True,True
