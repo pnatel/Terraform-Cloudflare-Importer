@@ -46,19 +46,32 @@ def read_CSV(csv_file) -> list:
     return temp
 
 
+def does_file_have_content(path):
+    """
+    Check file size and return True if file is not empty
+    """
+    size = os.stat(path).st_size
+    print("\n------> File size:", size)
+    if size == 0:
+        return False
+    elif path == "":
+        print("------> Path Invalid")
+        return False
+    else:
+        return True
+
+
 def remove_if_file_is_empty(path):
     """
     Remove empty file
     """
-    if (path != "") and (os.stat(path).st_size == 0):
-        print("------> File size:", os.stat(path).st_size)
+    if (path != "") and not does_file_have_content(path):
         os.remove(path)
         print("------> File removed:", path)
     elif path == "":
         print("------> Path Invalid")
     else:
         print("------> File not removed:", path)
-        print("------> File size:", os.stat(path).st_size)
 
 
 def account_or_zone(ResourceScope) -> list:
@@ -86,23 +99,25 @@ def generate_config(record):
             os.system(f"cf-terraforming generate --email {CLOUDFLARE_EMAIL} \
                       --token {TF_VAR_API_TOKEN} {id} --resource-type \
                         {record['Resource']} > {tty_file}")
-        remove_if_file_is_empty(tty_file)
+            remove_if_file_is_empty(tty_file)
     return "Generated configuration"
 
 
 def generate_config_v5(record):
     acc_zone = account_or_zone("Account or Zone")
-    
     for id in acc_zone:
         if eval(str(SIMULATION)) is True:
             tty_file = ""
         else:
-            tty_file = f"{record[:-1]}-{id[2:5].upper()}{id[10]}.tf"
+            tty_file = f"{record}-{id[2:5].upper()}{id[10]}.tf"
             # tty_file = record[:-1] + "-" + id[2:5].upper() + id[10] + ".tf"
         print("------> TF File:", tty_file)
         os.system(f"cf-terraforming generate --email {CLOUDFLARE_EMAIL} \
                     --token {TF_VAR_API_TOKEN} {id} --resource-type \
-                    {record[:-1]} > {tty_file}")
+                    {record} > {tty_file}")
+        if id == f"--account {ACCOUNT}" and does_file_have_content(tty_file) is True:
+            print("------> File generated for account:", id)
+            break
         remove_if_file_is_empty(tty_file)
     return "Generated configuration"
 
@@ -126,6 +141,11 @@ def import_config(record):
     return "Resource imported into state file"
 
 
+def import_config_v5(record):
+    # TODO: Implement import_config_v5
+    pass
+
+
 def main():
     if ver == "4":
         resource_types = read_CSV("./resource-types.csv")
@@ -140,17 +160,18 @@ def main():
         print(">>>> Version not supported")
         exit(1)
 
-    for item in resource_types[0:3]:
-        print(">>>> Attempting generation and import for:", item)
+    # for item in resource_types[0:10]:
+    for item in resource_types:
+        print("\n>>>> Attempting generation and import for:", item)
         if ver == "4":
             print(generate_config(item))
             # print(import_config(item))
         elif ver == "5":
-            print(generate_config_v5(item))
+            print(generate_config_v5(item[:-1]))
             # print(import_config_v5(item))
         else:
             print(">>>> Version not supported")
-            exit(1)        
+            exit(1)      
 
 
 if __name__ == '__main__':

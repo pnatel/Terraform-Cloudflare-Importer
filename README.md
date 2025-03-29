@@ -53,3 +53,5 @@ permission denied..
 12. FATA[0004] Could not route to /client/v4/zones/custom_hostnames/fallback_origin, perhaps your object identifier is invalid? (7003) {'Resource': 'cloudflare_custom_hostname_fallback_origin'}
 
 
+## TODO
+- simulation mode is not usefull anymore. It would be better to replace it with a sample step instead (at least for the generation part)
