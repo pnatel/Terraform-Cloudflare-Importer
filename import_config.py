@@ -8,7 +8,8 @@
 
 # HOW TO USE IT:
 # --------------
-# Clone the repo, create the .env file with the below variables and execute "run.sh":
+# Clone the repo, create the .env file with the below variables 
+# and execute "run.sh":
 # CLOUDFLARE_EMAIL=email@domain.tld
 # TF_VAR_API_TOKEN=XXXXXXXXXXXX
 # ACCOUNT=XXXXXXXX
@@ -49,7 +50,8 @@ def remove_if_file_is_empty(path):
     """
     Remove empty file
     """
-    if path != "" and os.stat(path).st_size == 0:
+    if (path != "") and (os.stat(path).st_size == 0):
+        print("------> File size:", os.stat(path).st_size)
         os.remove(path)
         print("------> File removed:", path)
     elif path == "":
@@ -61,11 +63,14 @@ def remove_if_file_is_empty(path):
 
 def account_or_zone(ResourceScope) -> list:
     if ResourceScope == "Account or Zone":
-        acc_zone = [f"--account {ACCOUNT}", f"--zone {ZONE01}", f"--zone {ZONE02}"]
+        acc_zone = [f"--account {ACCOUNT}",
+                    f"--zone {ZONE01}",
+                    f"--zone {ZONE02}"]
     elif ResourceScope == "Account":
         acc_zone = [f"--account {ACCOUNT}"]
     else:
-        acc_zone = [f"--zone {ZONE01}", f"--zone {ZONE02}"]
+        acc_zone = [f"--zone {ZONE01}",
+                    f"--zone {ZONE02}"]
     return acc_zone
 
 
@@ -76,26 +81,28 @@ def generate_config(record):
             if eval(str(SIMULATION)) is True:
                 tty_file = ""
             else:
-                tty_file = f"> {record['Resource']}-{id[2:5].upper()}{id[10]}.tf"
+                tty_file = f"{record['Resource']}-{id[2:5].upper()}{id[10]}.tf"
             print("------> TF File:", tty_file)
             os.system(f"cf-terraforming generate --email {CLOUDFLARE_EMAIL} \
                       --token {TF_VAR_API_TOKEN} {id} --resource-type \
-                        {record['Resource']} {tty_file}")
+                        {record['Resource']} > {tty_file}")
         remove_if_file_is_empty(tty_file)
     return "Generated configuration"
 
 
 def generate_config_v5(record):
     acc_zone = account_or_zone("Account or Zone")
+    
     for id in acc_zone:
         if eval(str(SIMULATION)) is True:
             tty_file = ""
         else:
-            tty_file = f"> {record}-{id[2:5].upper()}{id[10]}.tf"
+            tty_file = f"{record[:-1]}-{id[2:5].upper()}{id[10]}.tf"
+            # tty_file = record[:-1] + "-" + id[2:5].upper() + id[10] + ".tf"
         print("------> TF File:", tty_file)
         os.system(f"cf-terraforming generate --email {CLOUDFLARE_EMAIL} \
                     --token {TF_VAR_API_TOKEN} {id} --resource-type \
-                    {record} {tty_file}")
+                    {record[:-1]} > {tty_file}")
         remove_if_file_is_empty(tty_file)
     return "Generated configuration"
 
@@ -124,8 +131,8 @@ def main():
         resource_types = read_CSV("./resource-types.csv")
     elif ver == "5":
         os.system("terraform providers schema -json | jq -rM \
-                                   '.provider_schemas[].resource_schemas| \
-                                   keys[]' >> import_list.txt")
+                  '.provider_schemas[].resource_schemas|keys[]' \
+                  >> import_list.txt")
         with open('import_list.txt', 'r') as file:
             resource_types = file.readlines()
         os.remove('import_list.txt')
@@ -133,7 +140,7 @@ def main():
         print(">>>> Version not supported")
         exit(1)
 
-    for item in resource_types:
+    for item in resource_types[0:3]:
         print(">>>> Attempting generation and import for:", item)
         if ver == "4":
             print(generate_config(item))
