@@ -28,6 +28,9 @@ ACCOUNT = os.getenv('ACCOUNT')
 ZONE01 = os.getenv('ZONE01')
 ZONE02 = os.getenv('ZONE02')
 SIMULATION = os.getenv('SIMULATION')
+ver = os.getenv('VERSION')
+print(">>>> Version:", ver)
+print(">>>> SIMULATION:", SIMULATION)
 
 
 def read_CSV(csv_file) -> list:
@@ -40,6 +43,20 @@ def read_CSV(csv_file) -> list:
         for record in records:
             temp.append(record)
     return temp
+
+
+def remove_if_file_is_empty(path):
+    """
+    Remove empty file
+    """
+    if path != "" and os.stat(path).st_size == 0:
+        os.remove(path)
+        print("------> File removed:", path)
+    elif path == "":
+        print("------> Path Invalid")
+    else:
+        print("------> File not removed:", path)
+        print("------> File size:", os.stat(path).st_size)
 
 
 def account_or_zone(ResourceScope) -> list:
@@ -60,9 +77,26 @@ def generate_config(record):
                 tty_file = ""
             else:
                 tty_file = f"> {record['Resource']}-{id[2:5].upper()}{id[10]}.tf"
+            print("------> TF File:", tty_file)
             os.system(f"cf-terraforming generate --email {CLOUDFLARE_EMAIL} \
                       --token {TF_VAR_API_TOKEN} {id} --resource-type \
                         {record['Resource']} {tty_file}")
+        remove_if_file_is_empty(tty_file)
+    return "Generated configuration"
+
+
+def generate_config_v5(record):
+    acc_zone = account_or_zone("Account or Zone")
+    for id in acc_zone:
+        if eval(str(SIMULATION)) is True:
+            tty_file = ""
+        else:
+            tty_file = f"> {record}-{id[2:5].upper()}{id[10]}.tf"
+        print("------> TF File:", tty_file)
+        os.system(f"cf-terraforming generate --email {CLOUDFLARE_EMAIL} \
+                    --token {TF_VAR_API_TOKEN} {id} --resource-type \
+                    {record} {tty_file}")
+        remove_if_file_is_empty(tty_file)
     return "Generated configuration"
 
 
@@ -86,11 +120,30 @@ def import_config(record):
 
 
 def main():
-    resource_types = read_CSV("./resource-types.csv")
+    if ver == "4":
+        resource_types = read_CSV("./resource-types.csv")
+    elif ver == "5":
+        os.system("terraform providers schema -json | jq -rM \
+                                   '.provider_schemas[].resource_schemas| \
+                                   keys[]' >> import_list.txt")
+        with open('import_list.txt', 'r') as file:
+            resource_types = file.readlines()
+        os.remove('import_list.txt')
+    else:
+        print(">>>> Version not supported")
+        exit(1)
+
     for item in resource_types:
         print(">>>> Attempting generation and import for:", item)
-        print(generate_config(item))
-        print(import_config(item))
+        if ver == "4":
+            print(generate_config(item))
+            # print(import_config(item))
+        elif ver == "5":
+            print(generate_config_v5(item))
+            # print(import_config_v5(item))
+        else:
+            print(">>>> Version not supported")
+            exit(1)        
 
 
 if __name__ == '__main__':
