@@ -91,10 +91,7 @@ def generate_config(record):
     if eval(str(record["GenerateSupported"])) is True:
         acc_zone = account_or_zone(record["ResourceScope"])
         for id in acc_zone:
-            if eval(str(SIMULATION)) is True:
-                tty_file = ""
-            else:
-                tty_file = f"{record['Resource']}-{id[2:5].upper()}{id[10]}.tf"
+            tty_file = f"{record['Resource']}-{id[2:5].upper()}{id[10]}.tf"
             print("------> TF File:", tty_file)
             os.system(f"cf-terraforming generate --email {CLOUDFLARE_EMAIL} \
                       --token {TF_VAR_API_TOKEN} {id} --resource-type \
@@ -106,10 +103,7 @@ def generate_config(record):
 def generate_config_v5(record):
     acc_zone = account_or_zone("Account or Zone")
     for id in acc_zone:
-        if eval(str(SIMULATION)) is True:
-            tty_file = ""
-        else:
-            tty_file = f"{record}-{id[2:5].upper()}{id[10]}.tf"
+        tty_file = f"{record}-{id[2:5].upper()}{id[10]}.tf"
             # tty_file = record[:-1] + "-" + id[2:5].upper() + id[10] + ".tf"
         print("------> TF File:", tty_file)
         os.system(f"cf-terraforming generate --email {CLOUDFLARE_EMAIL} \
@@ -133,6 +127,7 @@ def import_config(record):
                 import_list = file.readlines()
             os.remove('import_list.txt')
             if eval(str(SIMULATION)) is True:
+                print("------> SIMULATION: No command executed")
                 print(import_list)
             else:
                 for command in import_list:
@@ -143,6 +138,7 @@ def import_config(record):
 
 def import_config_v5(record):
     # TODO: Implement import_config_v5
+    print("------> Import not implemented for version 5", record)
     pass
 
 
@@ -160,15 +156,24 @@ def main():
         print(">>>> Version not supported")
         exit(1)
 
-    # for item in resource_types[0:10]:
-    for item in resource_types:
+    if eval(str(SIMULATION)) is True:
+        # change the number of resources to simulate
+        # the generation and import of resources
+        # for testing purposes
+        # qty_resource_types = resource_types[0:5]
+        qty_resource_types = resource_types[0:10]
+    else:
+        qty_resource_types = resource_types
+    for item in qty_resource_types:
         print("\n>>>> Attempting generation and import for:", item)
         if ver == "4":
             print(generate_config(item))
-            # print(import_config(item))
+            print(import_config(item))
         elif ver == "5":
-            print(generate_config_v5(item[:-1]))
-            # print(import_config_v5(item))
+            # the -1 is to remove the \n from the end of the string
+            item = item[:-1]
+            print(generate_config_v5(item))
+            print(import_config_v5(item))
         else:
             print(">>>> Version not supported")
             exit(1)      
