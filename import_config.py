@@ -8,7 +8,7 @@
 
 # HOW TO USE IT:
 # --------------
-# Clone the repo, create the .env file with the below variables 
+# Clone the repo, create the .env file with the below variables
 # and execute "run.sh":
 # CLOUDFLARE_EMAIL=email@domain.tld
 # TF_VAR_API_TOKEN=XXXXXXXXXXXX
@@ -104,12 +104,15 @@ def generate_config_v5(record):
     acc_zone = account_or_zone("Account or Zone")
     for id in acc_zone:
         tty_file = f"{record}-{id[2:5].upper()}{id[10]}.tf"
-            # tty_file = record[:-1] + "-" + id[2:5].upper() + id[10] + ".tf"
+        # tty_file = record[:-1] + "-" + id[2:5].upper() + id[10] + ".tf"
         print("------> TF File:", tty_file)
         os.system(f"cf-terraforming generate --email {CLOUDFLARE_EMAIL} \
                     --token {TF_VAR_API_TOKEN} {id} --resource-type \
                     {record} > {tty_file}")
-        if id == f"--account {ACCOUNT}" and does_file_have_content(tty_file) is True:
+        if (
+            id == f"--account {ACCOUNT}"
+            and does_file_have_content(tty_file) is True
+        ):
             print("------> File generated for account:", id)
             break
         remove_if_file_is_empty(tty_file)
@@ -128,7 +131,9 @@ def import_config(record):
             os.remove('import_list.txt')
             if eval(str(SIMULATION)) is True:
                 print("------> SIMULATION: No command executed")
-                print(import_list)
+                print(*import_list)
+            elif import_list == []:
+                print("------> No command to execute")
             else:
                 for command in import_list:
                     print("------> COMMAND:", command)
@@ -137,31 +142,48 @@ def import_config(record):
 
 
 def import_config_v5(record):
-    # TODO: Implement import_config_v5
-    print("------> Import not implemented for version 5", record)
-    pass
+    acc_zone = account_or_zone("Account or Zone")
+    for id in acc_zone:
+        os.system(f"cf-terraforming import --email {CLOUDFLARE_EMAIL} \
+                    --token {TF_VAR_API_TOKEN} {id} --resource-type \
+                    {record} >> import_list.txt")
+        with open('import_list.txt', 'r') as file:
+            import_list = file.readlines()
+        os.remove('import_list.txt')
+        if eval(str(SIMULATION)) is True:
+            print("------> SIMULATION: No command executed")
+            print(*import_list)
+        else:
+            for command in import_list:
+                print("------> COMMAND:", command)
+                os.system(command)
+    return "Resource imported into state file"
 
 
-def main():
+def get_resource_type_list() -> list:
     if ver == "4":
         resource_types = read_CSV("./resource-types.csv")
     elif ver == "5":
         os.system("terraform providers schema -json | jq -rM \
-                  '.provider_schemas[].resource_schemas|keys[]' \
-                  >> import_list.txt")
+                '.provider_schemas[].resource_schemas|keys[]' \
+                >> import_list.txt")
         with open('import_list.txt', 'r') as file:
             resource_types = file.readlines()
         os.remove('import_list.txt')
     else:
         print(">>>> Version not supported")
         exit(1)
+    return resource_types
+
+
+def main():
+    resource_types = get_resource_type_list()
+    print(">>>> Resource types:", len(resource_types))
 
     if eval(str(SIMULATION)) is True:
-        # change the number of resources to simulate
-        # the generation and import of resources
-        # for testing purposes
+        # Reduce the number of resources to generate and import (testing)
         # qty_resource_types = resource_types[0:5]
-        qty_resource_types = resource_types[0:10]
+        qty_resource_types = resource_types[35:36]
     else:
         qty_resource_types = resource_types
     for item in qty_resource_types:
@@ -176,7 +198,7 @@ def main():
             print(import_config_v5(item))
         else:
             print(">>>> Version not supported")
-            exit(1)      
+            exit(1)
 
 
 if __name__ == '__main__':

@@ -40,3 +40,6 @@ terraform.rc
 .vscode/
 .DS_Store*
 .venv
+
+# Ignore generated TF files
+cloudflare_*.tf
