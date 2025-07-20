@@ -51,13 +51,14 @@ def does_file_have_content(path):
     Check file size and return True if file is not empty
     """
     size = os.stat(path).st_size
-    print("\n------> File size:", size)
+    # print("\n------> File size:", size)
     if size == 0:
         return False
     elif path == "":
         print("------> Path Invalid")
         return False
     else:
+        print("\n------> File size:", size)
         return True
 
 
@@ -202,5 +203,4 @@ def main():
 
 
 if __name__ == '__main__':
-
     main()
