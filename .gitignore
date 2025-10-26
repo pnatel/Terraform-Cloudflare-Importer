@@ -43,3 +43,6 @@ terraform.rc
 
 # Ignore generated TF files
 cloudflare_*.tf
+
+# terraform app
+terraform

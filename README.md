@@ -5,7 +5,7 @@ settings for supported resources, and import (most of them) in the Terraform
 state file. More details in:
 https://developers.cloudflare.com/terraform/advanced-topics/import-cloudflare-resources
 
-The script uses a list of Version 4 resources extracted from: (From Mar/2025)
+The Version 4 of this script uses a list of resources extracted from: (Last updated on Oct/2025)
 https://github.com/cloudflare/cf-terraforming?tab=readme-ov-file#supported-resources
 
 ## HOW TO USE IT
@@ -21,14 +21,15 @@ https://github.com/cloudflare/cf-terraforming?tab=readme-ov-file#supported-resou
    SIMULATION=True
    ```
 
-> PS: The number of zones is added/removed manually. Change it as necessary.
->
-> PS2: Keep `SIMULATION=True` in the first run to confirm the script will output the commands as expected.
+> ### NOTES: 
+> - The number of zones is added/removed manually. Change it as necessary.
+> - Keep `SIMULATION=True` in the first run to confirm the script will output the commands as expected.
 
 3. Update the Cloudflare version in the `provider.tf` (This script works with version's 4 and 5 of Cloudflare).
 4. (FOR CLOUDFLARE VERSION 4 ONLY) Check/update resource-types.csv table using the list of resources available in:
    https://github.com/cloudflare/cf-terraforming?tab=readme-ov-file#supported-resources
-5. Execute run.sh
+5. install cf-terraforming (instructions)[https://developers.cloudflare.com/terraform/advanced-topics/import-cloudflare-resources/#installation]
+6. Execute run.sh
 
 ## Error List
 

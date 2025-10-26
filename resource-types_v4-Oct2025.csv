@@ -23,6 +23,7 @@ cloudflare_filter,Zone,True,True
 cloudflare_firewall_rule,Zone,True,True
 cloudflare_healthcheck,Zone,True,True
 cloudflare_ip_list,Account,False,True
+cloudflare_list,Account,True,False
 cloudflare_load_balancer,Zone,True,True
 cloudflare_load_balancer_monitor,Account,True,True
 cloudflare_load_balancer_pool,Account,True,True
@@ -30,6 +31,7 @@ cloudflare_logpull_retention,Zone,False,False
 cloudflare_logpush_job,Zone,True,False
 cloudflare_logpush_ownership_challenge,Zone,False,False
 cloudflare_magic_firewall_ruleset,Account,False,False
+cloudflare_managed_headers,Zone,True,False
 cloudflare_origin_ca_certificate,Zone,True,True
 cloudflare_page_rule,Zone,True,True
 cloudflare_rate_limit,Zone,True,True
